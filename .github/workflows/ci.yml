@@ -89,7 +89,7 @@ jobs:
 
         qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisis' | jq -r '.projectStatus.status')
 
-        if [ "$qualitygateStatus" == "OK" ]; then
+        if [ "$qualitygate" == "OK" ]; then
           echo "El proyecto pasa la puerta de calidad"
           exit 0
         else
