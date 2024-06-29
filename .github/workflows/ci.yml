@@ -78,10 +78,10 @@ jobs:
     - name: Validate Quality Gate
       run: |
         idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=Laboratorio-final-new')
-        idanalisisParse=$(echo "$idanalisis" | jq .current.analysisId | sed -e 's/^"//' -e 's/"$//')
+        idanalisisParse=$(echo "$idanalisis" | jq -r '.current.analysisId')
 
         qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse')
-        qualitygateStatus=$(echo "$qualitygate" | jq .projectStatus.status | sed -e 's/^"//' -e 's/"$//')
+        qualitygateStatus=$(echo "$qualitygate" | jq -r '.projectStatus.status')
 
         if [ "$qualitygateStatus" == "OK" ]; then
           echo "El proyecto pasa la puerta de calidad"
@@ -89,3 +89,5 @@ jobs:
         else
           echo "El proyecto no pasa la puerta de calidad"
           exit 1
+        fi
+
