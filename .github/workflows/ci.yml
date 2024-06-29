@@ -45,19 +45,18 @@ jobs:
       id: validateProjectOnSonar
       run: |
         set +e
-        curl -f -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=${{ github.event.repository.name }}' -d 'project=${{ github.event.repository.name }}' -d 'organization=devops-v7' -d 'visibility=public'
-        if [ $? -ne 0 ]
-        then
-          echo "Project already exists on SonarCloud"
+        response=$(curl -s -o /dev/null -w "%{http_code}" -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=${{ github.event.repository.name }}' -d 'project=${{ github.event.repository.name }}' -d 'organization=devops-v7' -d 'visibility=public')
+        if [ "$response" -ne 200 ]; then
+          echo "Project already exists on SonarCloud or failed to create"
         else
           echo "Project ${{ github.event.repository.name }} was successfully created on SonarCloud"
+          echo "Setting main branch as default"
+          curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=main' -d 'project=${{ github.event.repository.name }}'
         fi
-        echo "Setting main branch as default"
-        curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=main' -d 'project=${{ github.event.repository.name }}'
-        
+
     - name: Install sonar-scanner
       run: |
-        yarn add global sonar-scanner
+        yarn global add sonar-scanner
 
     - name: Build project
       run: yarn build
@@ -67,16 +66,16 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
         npx sonar-scanner \
-          -Dsonar.projectKey=devops-v7_Laboratorio-final \
+          -Dsonar.projectKey=${{ github.event.repository.name }} \
           -Dsonar.organization=devops-v7 \
           -Dsonar.sources=. \
           -Dsonar.host.url=https://sonarcloud.io \
           -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.branch.name=
+          -Dsonar.branch.name=${{ github.ref_name }}
 
     - name: Validate Quality Gate
       run: |
-        idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=devops-v7_Laboratorio-final')
+        idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=${{ github.event.repository.name }}')
         idanalisisParse=$(echo "$idanalisis" | jq .current.analysisId | sed -e 's/^"//' -e 's/"$//')
 
         qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse')
