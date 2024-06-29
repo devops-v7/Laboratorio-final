@@ -24,17 +24,13 @@ jobs:
     - name: Run build
       run: yarn build
 
+    - name: Run tests
+      run: yarn test
+
   sast:
     runs-on: ubuntu-latest
 
     steps:
-
-    - name: Set up JDK 17
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17'
-        distribution: 'adopt'
-
     - name: Checkout code
       uses: actions/checkout@v2
 
@@ -46,37 +42,33 @@ jobs:
     - name: Install dependencies
       run: yarn install
 
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+        distribution: 'adopt'
+        check-latest: true
+
     - name: Install sonar-scanner
       run: |
         curl -Lo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
         unzip sonar-scanner.zip
         mv sonar-scanner-4.6.2.2472-linux sonar-scanner
-        export PATH=$PATH:$(pwd)/sonar-scanner/bin
 
     - name: Build project
       run: yarn build
 
-    - name: Validate project on SonarCloud
-      id: validateProjectOnSonar
-      run: |
-        set +e
-        curl -f -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=${{ github.event.repository.name }}' -d 'project=${{ github.event.repository.name }}' -d 'organization=devops-v7' -d 'visibility=public'
-        if [ $? -ne 0 ]
-        then
-          echo "Project already exists on SonarCloud"
-        else
-          echo "Project ${{ github.event.repository.name }} was successfully created on SonarCloud"
-          echo "Setting main branch as default"
-          curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=main'  -d 'project=${{ github.event.repository.name }}'
-        fi
+    - name: Run tests and generate coverage
+      run: yarn test
 
     - name: Run SonarQube analysis
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        JAVA_HOME: /opt/hostedtoolcache/Java_Adopt_jdk/17.0.1-12/x64
       run: |
         sonar-scanner/bin/sonar-scanner \
         -Dsonar.projectKey=${{ github.event.repository.name }} \
-        -Dsonar.organization=devops-v7 \
+        -Dsonar.organization=your_organization \
         -Dsonar.host.url=https://sonarcloud.io \
         -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
         -Dsonar.branch.name=${{ github.ref_name }}
