@@ -75,13 +75,19 @@ jobs:
           -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
           -Dsonar.branch.name=${{ github.ref_name }}
 
+    - name: Sleep to ensure analysis is complete
+      run: sleep 60
+
     - name: Validate Quality Gate
       run: |
-        idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=Laboratorio-final-new')
-        idanalisisParse=$(echo "$idanalisis" | jq -r '.current.analysisId')
+        idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=Laboratorio-final-new' | jq -r '.current.analysisId')
 
-        qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse')
-        qualitygateStatus=$(echo "$qualitygate" | jq -r '.projectStatus.status')
+        if [ -z "$idanalisis" ]; then
+          echo "No se pudo recuperar el ID de análisis"
+          exit 1
+        fi
+
+        qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisis' | jq -r '.projectStatus.status')
 
         if [ "$qualitygateStatus" == "OK" ]; then
           echo "El proyecto pasa la puerta de calidad"
@@ -90,4 +96,3 @@ jobs:
           echo "El proyecto no pasa la puerta de calidad"
           exit 1
         fi
-
