@@ -52,7 +52,7 @@ jobs:
         elif [ "$response" -eq 400 ]; then
           echo "Proyecto ya existe en SonarCloud"
         else
-          echo "Falló la creación del proyecto en SonarCloud, código de respuesta HTTP: $response"
+          echo "Fallo la creacion del proyecto en SonarCloud, código de respuesta HTTP: $response"
           exit 1
         fi
         set -e
