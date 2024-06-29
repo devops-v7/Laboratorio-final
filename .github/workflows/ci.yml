@@ -55,8 +55,7 @@ jobs:
         fi
 
     - name: Install sonar-scanner
-      run: |
-        yarn global add sonar-scanner
+      run: yarn global add sonar-scanner
 
     - name: Build project
       run: yarn build
@@ -66,7 +65,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
         npx sonar-scanner \
-          -Dsonar.projectKey=${{ github.event.repository.name }} \
+          -Dsonar.projectKey=devops-v7_Laboratorio-final \
           -Dsonar.organization=devops-v7 \
           -Dsonar.sources=. \
           -Dsonar.host.url=https://sonarcloud.io \
@@ -75,7 +74,7 @@ jobs:
 
     - name: Validate Quality Gate
       run: |
-        idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=${{ github.event.repository.name }}')
+        idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=devops-v7_Laboratorio-final')
         idanalisisParse=$(echo "$idanalisis" | jq .current.analysisId | sed -e 's/^"//' -e 's/"$//')
 
         qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse')
