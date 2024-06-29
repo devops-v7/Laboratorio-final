@@ -45,14 +45,14 @@ jobs:
       id: validateProjectOnSonar
       run: |
         set +e
-        response=$(curl -s -o /dev/null -w "%{http_code}" -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=${{ github.event.repository.name }}' -d 'project=${{ github.event.repository.name }}' -d 'organization=devops-v7' -d 'visibility=public')
+        response=$(curl -s -o /dev/null -w "%{http_code}" -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=Laboratorio-final-new' -d 'project=Laboratorio-final-new' -d 'organization=devops-v7' -d 'visibility=public')
         if [ "$response" -eq 200 ]; then
-          echo "Project ${{ github.event.repository.name }} created successfully on SonarCloud"
-          curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=main' -d 'project=${{ github.event.repository.name }}'
+          echo "Proyecto Laboratorio-final-new creado exitosamente en SonarCloud"
+          curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=main' -d 'project=Laboratorio-final-new'
         elif [ "$response" -eq 400 ]; then
-          echo "Project already exists on SonarCloud"
+          echo "Proyecto ya existe en SonarCloud"
         else
-          echo "Failed to create project on SonarCloud, HTTP response code: $response"
+          echo "Falló la creación del proyecto en SonarCloud, código de respuesta HTTP: $response"
           exit 1
         fi
         set -e
@@ -68,7 +68,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       run: |
         npx sonar-scanner \
-          -Dsonar.projectKey=${{ github.event.repository.name }} \
+          -Dsonar.projectKey=Laboratorio-final-new \
           -Dsonar.organization=devops-v7 \
           -Dsonar.sources=. \
           -Dsonar.host.url=https://sonarcloud.io \
@@ -77,15 +77,15 @@ jobs:
 
     - name: Validate Quality Gate
       run: |
-        idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=${{ github.event.repository.name }}')
+        idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=Laboratorio-final-new')
         idanalisisParse=$(echo "$idanalisis" | jq .current.analysisId | sed -e 's/^"//' -e 's/"$//')
 
         qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse')
         qualitygateStatus=$(echo "$qualitygate" | jq .projectStatus.status | sed -e 's/^"//' -e 's/"$//')
 
         if [ "$qualitygateStatus" == "OK" ]; then
-          echo "Project passes the quality gate"
+          echo "El proyecto pasa la puerta de calidad"
           exit 0
         else
-          echo "Project does not pass the quality gate"
+          echo "El proyecto no pasa la puerta de calidad"
           exit 1
