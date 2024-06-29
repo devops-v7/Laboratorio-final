@@ -44,18 +44,16 @@ jobs:
     - name: Validando existencia de proyecto en SonarCloud
       id: validateProjectOnSonar
       run: |
-        #pwd
-        #ls -R
         set +e
-        curl -f -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=${{ github.event.repository.name }}' -d 'project=${{ github.event.repository.name }}' -d 'organization=devops-v7' -d 'visibility=public'
-        if [ $? -ne 0 ]; then
-          echo "Proyecto ya existe en Sonarcloud"
-          echo "::set-output name=proyectoExiste::1"
-        else
-          echo "Proyecto ${{ github.event.repository.name }} creado exitosamente en Sonarcloud"
-          
-          echo "Se establece rama main como rama por defecto"
+        response=$(curl -s -o /dev/null -w "%{http_code}" -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=${{ github.event.repository.name }}' -d 'project=${{ github.event.repository.name }}' -d 'organization=devops-v7' -d 'visibility=public')
+        if [ "$response" -eq 200 ]; then
+          echo "Project ${{ github.event.repository.name }} created successfully on SonarCloud"
           curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=main' -d 'project=${{ github.event.repository.name }}'
+        elif [ "$response" -eq 400 ]; then
+          echo "Project already exists on SonarCloud"
+        else
+          echo "Failed to create project on SonarCloud, HTTP response code: $response"
+          exit 1
         fi
         set -e
 
