@@ -89,7 +89,7 @@ jobs:
           fi
         done
         if [ "$status" != "SUCCESS" ]; then
-          echo "Analysis failed"
+          echo "Analysis failed with status: $status"
           exit 1
         fi
 
