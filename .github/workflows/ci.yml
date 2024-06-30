@@ -183,7 +183,7 @@ jobs:
           timeout: '5m'
 
   owasp_zap_baseline_scan:
-    needs: Dockerbuild
+    needs: DockerScan
     runs-on: ubuntu-latest
     steps:
       - name: Docker Login
