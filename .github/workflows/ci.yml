@@ -115,6 +115,9 @@ jobs:
     - name: Install dependencies
       run: yarn install
 
+    - name: Install depcheck
+      run: npm install depcheck
+
     - name: Run depcheck for SCA
       run: |
         mkdir -p reports
