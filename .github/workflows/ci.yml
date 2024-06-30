@@ -181,3 +181,17 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
           timeout: '5m'
+
+  ZAPScan:
+    needs: DockerScan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.8.0
+        with:
+          target: "http://localhost:8080"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
