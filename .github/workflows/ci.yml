@@ -103,3 +103,22 @@ jobs:
           echo "El proyecto no pasa la puerta de calidad"
           exit 1
         fi
+
+  SCA:
+    needs: sast
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Run depcheck for SCA
+      run: npx depcheck --json > reports/depcheck-report.json
+
+    - name: Upload Test result
+      uses: actions/upload-artifact@master
+      with:
+        name: Depcheck report
+        path: ${{github.workspace}}/reports
