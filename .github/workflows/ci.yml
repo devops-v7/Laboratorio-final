@@ -101,38 +101,37 @@ jobs:
             exit 1
           fi
 
-  sca:
-    needs: sast
-    runs-on: ubuntu-latest
+  SCA:
+  needs: sast
+  runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  steps:
+  - name: Set up Node.js 16
+    uses: actions/setup-node@v2
+    with:
+      node-version: '16'
 
-      - name: Install dependencies
-        run: yarn install
+  - name: Checkout code
+    uses: actions/checkout@v2
 
-      - name: Install depcheck
-        run: yarn global add depcheck
+  - name: Install dependencies
+    run: yarn install
 
-      - name: Run depcheck for SCA (with error handling)
-        run: |
-          set -x
-          pwd
-          ls -la
-          yarn global bin
-          export PATH=$(yarn global bin):$PATH
-          echo $PATH
-          mkdir -p reports
-          depcheck --json > reports/depcheck-report.json 2> reports/depcheck-error.log
-          if [ $? -ne 0 ]; then
-            echo "depcheck failed, see reports/depcheck-error.log for details"
-            exit 1
-          fi
-          set +x
+  - name: Run yarn audit
+    run: |
+      yarn audit --json > audit-report.json
+    continue-on-error: true
 
-      - name: Upload SCA report (optional)
-        uses: actions/upload-artifact@master
-        with:
-          name: Depcheck report
-          path: reports/depcheck-report.json
+  - name: Check for high severity vulnerabilities
+    run: |
+      cat audit-report.json | jq '. | select(.severity == "high")' > high-severity-vulnerabilities.json
+      if [ -s high-severity-vulnerabilities.json ]; then
+        echo "High severity vulnerabilities found!"
+        exit 1
+      fi
+
+  - name: Upload SCA report
+    uses: actions/upload-artifact@master
+    with:
+      name: Yarn Audit report
+      path: audit-report.json
