@@ -102,36 +102,36 @@ jobs:
           fi
 
   SCA:
-  needs: sast
-  runs-on: ubuntu-latest
+    needs: sast
+    runs-on: ubuntu-latest
 
-  steps:
-  - name: Set up Node.js 16
-    uses: actions/setup-node@v2
-    with:
-      node-version: '16'
+    steps:
+      - name: Set up Node.js 16
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
 
-  - name: Checkout code
-    uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-  - name: Install dependencies
-    run: yarn install
+      - name: Install dependencies
+        run: yarn install
 
-  - name: Run yarn audit
-    run: |
-      yarn audit --json > audit-report.json
-    continue-on-error: true
+      - name: Run yarn audit
+        run: |
+          yarn audit --json > audit-report.json
+        continue-on-error: true
 
-  - name: Check for high severity vulnerabilities
-    run: |
-      cat audit-report.json | jq '. | select(.severity == "high")' > high-severity-vulnerabilities.json
-      if [ -s high-severity-vulnerabilities.json ]; then
-        echo "High severity vulnerabilities found!"
-        exit 1
-      fi
+      - name: Check for high severity vulnerabilities
+        run: |
+          cat audit-report.json | jq '. | select(.severity == "high")' > high-severity-vulnerabilities.json
+          if [ -s high-severity-vulnerabilities.json ]; then
+            echo "High severity vulnerabilities found!"
+            exit 1
+          fi
 
-  - name: Upload SCA report
-    uses: actions/upload-artifact@master
-    with:
-      name: Yarn Audit report
-      path: audit-report.json
+      - name: Upload SCA report
+        uses: actions/upload-artifact@master
+        with:
+          name: Yarn Audit report
+          path: audit-report.json
