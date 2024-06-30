@@ -182,7 +182,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
           timeout: '5m'
 
-  OWASP ZAP Baseline Scan:
+  owasp_zap_baseline_scan:
     needs: Dockerbuild
     runs-on: ubuntu-latest
     steps:
