@@ -82,8 +82,11 @@ jobs:
         while [ "$status" != "SUCCESS" ] && [ "$status" != "FAILED" ]; do
           sleep 10
           analysisId=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=Laboratorio-final-new' | jq -r '.current.analysisId')
-          status=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' "https://sonarcloud.io/api/ce/task?id=$analysisId" | jq -r '.task.status')
-          echo "Current status: $status"
+          echo "Analysis ID: $analysisId"
+          if [ "$analysisId" != "null" ]; then
+            status=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' "https://sonarcloud.io/api/ce/task?id=$analysisId" | jq -r '.task.status')
+            echo "Current status: $status"
+          fi
         done
         if [ "$status" != "SUCCESS" ]; then
           echo "Analysis failed"
