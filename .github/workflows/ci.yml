@@ -184,25 +184,24 @@ jobs:
 
   owasp_zap_baseline_scan:
     needs: DockerScan
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - name: Docker Login
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}
+    steps:
+      - name: Despliegue Aplicacion
+        run: |
+          docker run -d -p 8080:8080 roderico/laboratorio-devsecops-final:latest
+          
+      - name: Sleep
+        run: |
+          sleep 3
 
       - name: OWASP ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.8.0
+        uses: zaproxy/action-baseline@v0.11.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          docker_name: 'zaproxy/zap2docker-stable'
           target: 'http://localhost:8080'
-          format: 'html'
-          output: 'report_html.html'
 
-      - name: Upload ZAP Report
-        uses: actions/upload-artifact@v2
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
         with:
-          name: ZAP Report
-          path: report_html.html
+          name: DAST-Report
+          path: DAST.html
