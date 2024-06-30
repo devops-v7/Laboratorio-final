@@ -118,12 +118,17 @@ jobs:
     - name: Install depcheck
       run: yarn global add depcheck
 
+    - name: Verify depcheck installation
+      run: |
+        yarn global bin
+        which depcheck
+        depcheck --version
+
     - name: Run depcheck for SCA
       run: |
         set -x
         pwd
         ls -la
-        yarn global bin
         export PATH=$(yarn global bin):$PATH
         echo $PATH
         mkdir -p reports
