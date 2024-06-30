@@ -10,131 +10,129 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
 
-    - name: Install dependencies
-      run: yarn install
+      - name: Install dependencies
+        run: yarn install
 
-    - name: Run build
-      run: yarn build
+      - name: Run build
+        run: yarn build
 
   sast:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'adopt'
-        java-version: '17'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: '17'
 
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run: yarn install
+      - name: Install dependencies
+        run: yarn install
 
-    - name: Validando existencia de proyecto en SonarCloud
-      id: validateProjectOnSonar
-      run: |
-        set +e
-        response=$(curl -s -o /dev/null -w "%{http_code}" -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=Laboratorio-final-new' -d 'project=Laboratorio-final-new' -d 'organization=devops-v7' -d 'visibility=public')
-        if [ "$response" -eq 200 ]; then
-          echo "Proyecto Laboratorio-final-new creado exitosamente en SonarCloud"
-          curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=main' -d 'project=Laboratorio-final-new'
-        elif [ "$response" -eq 400 ]; then
-          echo "Proyecto ya existe en SonarCloud"
-        else
-          echo "Fallo la creacion del proyecto en SonarCloud, codigo de respuesta HTTP: $response"
-          exit 1
-        fi
-        set -e
+      - name: Validando existencia de proyecto en SonarCloud
+        id: validateProjectOnSonar
+        run: |
+          set +e
+          response=$(curl -s -o /dev/null -w "%{http_code}" -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=Laboratorio-final-new' -d 'project=Laboratorio-final-new' -d 'organization=devops-v7' -d 'visibility=public')
+          if [ "$response" -eq 200 ]; then
+            echo "Proyecto Laboratorio-final-new creado exitosamente en SonarCloud"
+            curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=main' -d 'project=Laboratorio-final-new'
+          elif [ "$response" -eq 400 ]; then
+            echo "Proyecto ya existe en SonarCloud"
+          else
+            echo "Fallo la creacion del proyecto en SonarCloud, codigo de respuesta HTTP: $response"
+            exit 1
+          fi
+          set -e
 
-    - name: Install sonar-scanner
-      run: yarn global add sonar-scanner
+      - name: Install sonar-scanner
+        run: yarn global add sonar-scanner
 
-    - name: Build project
-      run: yarn build
+      - name: Build project
+        run: yarn build
 
-    - name: Run SonarCloud analysis
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      run: |
-        npx sonar-scanner \
-          -Dsonar.projectKey=Laboratorio-final-new \
-          -Dsonar.organization=devops-v7 \
-          -Dsonar.sources=. \
-          -Dsonar.host.url=https://sonarcloud.io \
-          -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
-          -Dsonar.branch.name=${{ github.ref_name }}
+      - name: Run SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          npx sonar-scanner \
+            -Dsonar.projectKey=Laboratorio-final-new \
+            -Dsonar.organization=devops-v7 \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
+            -Dsonar.branch.name=${{ github.ref_name }}
 
-    - name: Validate Quality Gate
-      run: |
-        echo "Obteniendo ID de análisis"
-        idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=Laboratorio-final-new')
-        echo "Respuesta de ID de análisis: $idanalisis"
-        idanalisisParse=$(echo "$idanalisis" | jq -r '.current.analysisId')
+      - name: Validate Quality Gate
+        run: |
+          echo "Obteniendo ID de análisis"
+          idanalisis=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=Laboratorio-final-new')
+          echo "Respuesta de ID de análisis: $idanalisis"
+          idanalisisParse=$(echo "$idanalisis" | jq -r '.current.analysisId')
 
-        if [ -z "$idanalisisParse" ]; then
-          echo "No se pudo recuperar el ID de análisis"
-          exit 1
-        else
-          echo "ID de análisis recuperado: $idanalisisParse"
-        fi
+          if [ -z "$idanalisisParse" ]; then
+            echo "No se pudo recuperar el ID de análisis"
+            exit 1
+          else
+            echo "ID de análisis recuperado: $idanalisisParse"
+          fi
 
-        qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' "https://sonarcloud.io/api/qualitygates/project_status?analysisId=${idanalisisParse}")
-        echo "Respuesta de Quality Gate: $qualitygate"
-        qualitygateStatus=$(echo "$qualitygate" | jq -r '.projectStatus.status')
+          qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' "https://sonarcloud.io/api/qualitygates/project_status?analysisId=${idanalisisParse}")
+          echo "Respuesta de Quality Gate: $qualitygate"
+          qualitygateStatus=$(echo "$qualitygate" | jq -r '.projectStatus.status')
 
-        if [ "$qualitygateStatus" == "OK" ]; then
-          echo "El proyecto pasa la puerta de calidad"
-          exit 0
-        else
-          echo "El proyecto no pasa la puerta de calidad"
-          exit 1
-        fi
+          if [ "$qualitygateStatus" == "OK" ]; then
+            echo "El proyecto pasa la puerta de calidad"
+            exit 0
+          else
+            echo "El proyecto no pasa la puerta de calidad"
+            exit 1
+          fi
 
-  SCA:
+  sca:
     needs: sast
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Install dependencies
-      run: yarn install
+      - name: Install dependencies
+        run: yarn install
 
-    - name: Install depcheck
-      run: yarn global add depcheck
+      - name: Install depcheck
+        run: yarn global add depcheck
 
-  - name: Run depcheck for SCA (with error handling)
-    run: |
-      set -x
-      pwd
-      ls -la
-      yarn global bin
-      export PATH=$(yarn global bin):$PATH
-      echo $PATH
-      mkdir -p reports
-      # Run depcheck and capture output
-      depcheck --json > reports/depcheck-report.json 2> reports/depcheck-error.log
-      # Check for errors in depcheck output
-      if [ $? -ne 0 ]; then
-        echo "depcheck failed, see reports/depcheck-error.log for details"
-        exit 1
-      fi
-      set +x
+      - name: Run depcheck for SCA (with error handling)
+        run: |
+          set -x
+          pwd
+          ls -la
+          yarn global bin
+          export PATH=$(yarn global bin):$PATH
+          echo $PATH
+          mkdir -p reports
+          depcheck --json > reports/depcheck-report.json 2> reports/depcheck-error.log
+          if [ $? -ne 0 ]; then
+            echo "depcheck failed, see reports/depcheck-error.log for details"
+            exit 1
+          fi
+          set +x
 
-    - name: Upload SCA report (optional)
-      uses: actions/upload-artifact@master  #to upload the report
-      with:
-        name: Depcheck report
-        path: reports/depcheck-report.json
+      - name: Upload SCA report (optional)
+        uses: actions/upload-artifact@master
+        with:
+          name: Depcheck report
+          path: reports/depcheck-report.json
