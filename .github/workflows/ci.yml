@@ -149,12 +149,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker Image
+      - name: Build Docker
         run: |
           docker build --tag laboratorio-devsecops-final:latest .
 
-      - name: Push Docker Image
-        run: |
+      - name: Push Docker
+        run: |  
           docker push laboratorio-devsecops-final:latest
 
   DockerScan:
@@ -171,7 +171,7 @@ jobs:
         run: |
           docker pull laboratorio-devsecops-final:latest
 
-      - name: Run Trivy vulnerability scanner
+      - name: run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'laboratorio-devsecops-final:latest'
