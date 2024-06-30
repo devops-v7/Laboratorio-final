@@ -122,11 +122,12 @@ jobs:
           yarn audit --json > audit-report.json
         continue-on-error: true
 
-      - name: Check for high severity vulnerabilities
+      - name: Check for vulnerabilities
         run: |
-          cat audit-report.json | jq '. | select(.severity == "high")' > high-severity-vulnerabilities.json
-          if [ -s high-severity-vulnerabilities.json ]; then
-            echo "High severity vulnerabilities found!"
+          cat audit-report.json | jq 'select(.type=="auditAdvisory" and (.data.advisory.severity=="critical" or .data.advisory.severity=="high" or .data.advisory.severity=="moderate"))' > vulnerabilities.json
+          if [ -s vulnerabilities.json ]; then
+            echo "Critical, high or moderate vulnerabilities found!"
+            cat vulnerabilities.json
             exit 1
           fi
 
