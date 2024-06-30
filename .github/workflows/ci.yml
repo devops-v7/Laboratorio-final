@@ -120,9 +120,12 @@ jobs:
 
     - name: Run depcheck for SCA
       run: |
+        set -x
         export PATH=$(npm bin -g):$PATH
+        echo $PATH
         mkdir -p reports
         depcheck --json > reports/depcheck-report.json
+        set +x
 
     - name: Upload Test result
       uses: actions/upload-artifact@master
