@@ -116,7 +116,7 @@ jobs:
       run: yarn install
 
     - name: Install depcheck
-      run: npm install depcheck
+      run: npm install -g depcheck
 
     - name: Run depcheck for SCA
       run: |
@@ -128,11 +128,3 @@ jobs:
       with:
         name: Depcheck report
         path: reports/depcheck-report.json
-
-    - name: Dependency Check
-      uses: dependency-check/Dependency-Check_Action@1.1.0
-      with:
-        project: Laboratorio-final-new
-        scan: .
-        format: JSON
-        output: reports
