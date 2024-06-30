@@ -83,9 +83,11 @@ jobs:
           sleep 10
           analysisId=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=Laboratorio-final-new' | jq -r '.current.analysisId')
           echo "Analysis ID: $analysisId"
-          if [ "$analysisId" != "null" ]; then
+          if [ -n "$analysisId" ] && [ "$analysisId" != "null" ]; then
             status=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' "https://sonarcloud.io/api/ce/task?id=$analysisId" | jq -r '.task.status')
             echo "Current status: $status"
+          else
+            echo "Analysis ID not found, retrying..."
           fi
         done
         if [ "$status" != "SUCCESS" ]; then
@@ -133,22 +135,11 @@ jobs:
     - name: Install depcheck
       run: yarn global add depcheck
 
-    - name: Verify depcheck installation
-      run: |
-        yarn global bin
-        which depcheck
-        depcheck --version
-
     - name: Run depcheck for SCA
       run: |
-        set -x
-        pwd
-        ls -la
         export PATH=$(yarn global bin):$PATH
-        echo $PATH
         mkdir -p reports
         depcheck --json > reports/depcheck-report.json
-        set +x
 
     - name: Upload Test result
       uses: actions/upload-artifact@master
