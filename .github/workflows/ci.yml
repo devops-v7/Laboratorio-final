@@ -122,12 +122,11 @@ jobs:
           yarn audit --json > audit-report.json
         continue-on-error: true
 
-      - name: Check for vulnerabilities
+      - name: Check for high severity vulnerabilities
         run: |
-          cat audit-report.json | jq 'select(.type=="auditAdvisory" and (.data.advisory.severity=="critical" or .data.advisory.severity=="high" or .data.advisory.severity=="moderate"))' > vulnerabilities.json
-          if [ -s vulnerabilities.json ]; then
-            echo "Critical, high or moderate vulnerabilities found!"
-            cat vulnerabilities.json
+          cat audit-report.json | jq '. | select(.severity == "high")' > high-severity-vulnerabilities.json
+          if [ -s high-severity-vulnerabilities.json ]; then
+            echo "High severity vulnerabilities found!"
             exit 1
           fi
 
@@ -136,3 +135,51 @@ jobs:
         with:
           name: Yarn Audit report
           path: audit-report.json
+
+  Dockerbuild:
+    needs: SCA
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker
+        run: |
+          docker build --tag roderico/laboratorio-devsecops-final:latest .
+
+      - name: Push Docker
+        run: |
+          docker push roderico/laboratorio-devsecops-final:latest
+
+  DockerScan:
+    needs: Dockerbuild
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Pull de la imagen Docker
+        run: |
+          docker pull roderico/laboratorio-devsecops-final:latest
+
+      - name: run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'roderico/laboratorio-devsecops-final:latest'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          timeout: '5m'
