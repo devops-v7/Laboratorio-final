@@ -75,26 +75,6 @@ jobs:
           -Dsonar.login=${{ secrets.SONAR_TOKEN }} \
           -Dsonar.branch.name=${{ github.ref_name }}
 
-    - name: Wait for analysis to complete
-      run: |
-        status=""
-        analysisId=""
-        while [ "$status" != "SUCCESS" ] && [ "$status" != "FAILED" ]; do
-          sleep 10
-          analysisId=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/ce/component?component=Laboratorio-final-new' | jq -r '.current.analysisId')
-          echo "Analysis ID: $analysisId"
-          if [ -n "$analysisId" ] && [ "$analysisId" != "null" ]; then
-            status=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' "https://sonarcloud.io/api/ce/task?id=$analysisId" | jq -r '.task.status')
-            echo "Current status: $status"
-          else
-            echo "Analysis ID not found, retrying..."
-          fi
-        done
-        if [ "$status" != "SUCCESS" ]; then
-          echo "Analysis failed with status: $status"
-          exit 1
-        fi
-
     - name: Validate Quality Gate
       run: |
         echo "Obteniendo ID de análisis"
