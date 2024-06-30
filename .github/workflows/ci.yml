@@ -120,6 +120,7 @@ jobs:
 
     - name: Run depcheck for SCA
       run: |
+        export PATH=$(npm bin -g):$PATH
         mkdir -p reports
         depcheck --json > reports/depcheck-report.json
 
