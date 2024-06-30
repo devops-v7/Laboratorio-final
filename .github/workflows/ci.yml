@@ -129,3 +129,23 @@ jobs:
       with:
         name: Depcheck report
         path: reports/depcheck-report.json
+
+    - name: Dependency Check
+      uses: dependency-check/Dependency-Check_Action@1.1.0
+      env:
+        JAVA_HOME: /opt/jdk
+      id: Depcheck
+      with:
+        project: '${{ github.event.repository.name }}'
+        path: '.'
+        format: 'HTML'
+        out: 'reports'
+        args: >
+          --failOnCVSS 7
+          --enableRetired
+
+    - name: Upload Test result
+      uses: actions/upload-artifact@master
+      with:
+        name: Depcheck report
+        path: ${{github.workspace}}/reports
