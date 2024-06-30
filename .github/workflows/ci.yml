@@ -101,41 +101,40 @@ jobs:
           exit 1
         fi
 
-  
-SCA:
-  needs: sast
-  runs-on: ubuntu-latest
+  SCA:
+    needs: sast
+    runs-on: ubuntu-latest
 
-  steps:
-  - name: Checkout code
-    uses: actions/checkout@v2
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-  - name: Install dependencies
-    run: yarn install
+    - name: Install dependencies
+      run: yarn install
 
-  - name: Install depcheck
-    run: yarn global add depcheck
+    - name: Install depcheck
+      run: yarn global add depcheck
 
-  - name: Run depcheck for SCA (with error handling)
-    run: |
-      set -x
-      pwd
-      ls -la
-      yarn global bin
-      export PATH=$(yarn global bin):$PATH
-      echo $PATH
-      mkdir -p reports
-      # Run depcheck and capture output
-      depcheck --json > reports/depcheck-report.json 2>&1
-      # Check for errors in depcheck output
-      if [ $? -ne 0 ]; then
-        echo "depcheck failed, see reports/depcheck-report.json for details"
-        # Optionally upload a minimal report (e.g., empty file) or fail the pipeline stage
-      fi
-      set +x
+    - name: Run depcheck for SCA (with error handling)
+      run: |
+        set -x
+        pwd
+        ls -la
+        yarn global bin
+        export PATH=$(yarn global bin):$PATH
+        echo $PATH
+        mkdir -p reports
+        # Run depcheck and capture output
+        depcheck --json > reports/depcheck-report.json 2>&1
+        # Check for errors in depcheck output
+        if [ $? -ne 0 ]; then
+          echo "depcheck failed, see reports/depcheck-report.json for details"
+          # Optionally upload a minimal report (e.g., empty file) or fail the pipeline stage
+        fi
+        set +x
 
-  - name: Upload SCA report (optional)
-    uses: actions/upload-artifact@master  #to upload the report
-    with:
-      name: Depcheck report
-      path: reports/depcheck-report.json
+    - name: Upload SCA report (optional)
+      uses: actions/upload-artifact@master  #to upload the report
+      with:
+        name: Depcheck report
+        path: reports/depcheck-report.json
