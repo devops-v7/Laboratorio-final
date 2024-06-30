@@ -115,23 +115,23 @@ jobs:
     - name: Install depcheck
       run: yarn global add depcheck
 
-    - name: Run depcheck for SCA (with error handling)
-      run: |
-        set -x
-        pwd
-        ls -la
-        yarn global bin
-        export PATH=$(yarn global bin):$PATH
-        echo $PATH
-        mkdir -p reports
-        # Run depcheck and capture output
-        depcheck --json > reports/depcheck-report.json 2>&1
-        # Check for errors in depcheck output
-        if [ $? -ne 0 ]; then
-          echo "depcheck failed, see reports/depcheck-report.json for details"
-          # Optionally upload a minimal report (e.g., empty file) or fail the pipeline stage
-        fi
-        set +x
+  - name: Run depcheck for SCA (with error handling)
+    run: |
+      set -x
+      pwd
+      ls -la
+      yarn global bin
+      export PATH=$(yarn global bin):$PATH
+      echo $PATH
+      mkdir -p reports
+      # Run depcheck and capture output
+      depcheck --json > reports/depcheck-report.json 2> reports/depcheck-error.log
+      # Check for errors in depcheck output
+      if [ $? -ne 0 ]; then
+        echo "depcheck failed, see reports/depcheck-error.log for details"
+        exit 1
+      fi
+      set +x
 
     - name: Upload SCA report (optional)
       uses: actions/upload-artifact@master  #to upload the report
