@@ -186,7 +186,6 @@ jobs:
     needs: DockerScan
     runs-on: self-hosted
     steps:
-    steps:
       - name: Despliegue Aplicacion
         run: |
           docker run -d -p 8080:8080 roderico/laboratorio-devsecops-final:latest
