@@ -116,15 +116,15 @@ jobs:
       run: yarn install
 
     - name: Install depcheck
-      run: npm install -g depcheck
+      run: yarn global add depcheck
 
     - name: Run depcheck for SCA
       run: |
         set -x
         pwd
         ls -la
-        npm bin -g
-        export PATH=$(npm bin -g):$PATH
+        yarn global bin
+        export PATH=$(yarn global bin):$PATH
         echo $PATH
         mkdir -p reports
         depcheck --json > reports/depcheck-report.json
