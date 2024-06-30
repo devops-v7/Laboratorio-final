@@ -15,7 +15,6 @@ export async function loader() {
 }
 export function Component() {
   const { data: genres, isSuccess } = useGetGenresQuery(MEDIA_TYPE.Movie);
-  password = "password";
 
   if (isSuccess && genres && genres.length > 0) {
     return (
