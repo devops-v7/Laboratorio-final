@@ -147,26 +147,15 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASS }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Download JAR
-        uses: actions/download-artifact@v2
-        with:
-          name: JAR
-          path: build/libs
-
-      - name: List files for debugging
+      - name: Build Docker Image
         run: |
-          ls -l build/libs
+          docker build --tag laboratorio-devsecops-final:latest .
 
-      - name: Build Docker
+      - name: Push Docker Image
         run: |
-          cp build/libs/spring-petclinic-2.6.0.jar .
-          docker build --tag roderico/laboratorio-devsecops-final:latest .
-
-      - name: Push Docker
-        run: |  
-          docker push roderico/laboratorio-devsecops-final:latest
+          docker push laboratorio-devsecops-final:latest
 
   DockerScan:
     needs: Dockerbuild
@@ -176,16 +165,16 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASS }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Pull de la imagen Docker
         run: |
-          docker pull roderico/laboratorio-devsecops-final:latest
+          docker pull laboratorio-devsecops-final:latest
 
-      - name: run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'roderico/laboratorio-devsecops-final:latest'
+          image-ref: 'laboratorio-devsecops-final:latest'
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
