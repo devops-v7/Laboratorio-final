@@ -120,11 +120,11 @@ jobs:
       with:
         project: 'Laboratorio-final-new'
         format: 'JSON'
-        output: 'reports'
-        scan: '.'
+        path: '.'
+        others: '--noupdate'
 
     - name: Upload Test result
       uses: actions/upload-artifact@master
       with:
         name: Dependency Check report
-        path: reports/dependency-check-report.json
+        path: dependency-check-report.json
