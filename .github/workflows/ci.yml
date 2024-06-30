@@ -182,16 +182,27 @@ jobs:
           severity: 'CRITICAL,HIGH'
           timeout: '5m'
 
-  ZAPScan:
-    needs: DockerScan
+  OWASP ZAP Baseline Scan:
+    needs: Dockerbuild
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
 
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.8.0
         with:
-          target: "http://localhost:8080"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          docker_name: 'zaproxy/zap2docker-stable'
+          target: 'http://localhost:8080'
+          format: 'html'
+          output: 'report_html.html'
+
+      - name: Upload ZAP Report
+        uses: actions/upload-artifact@v2
+        with:
+          name: ZAP Report
+          path: report_html.html
