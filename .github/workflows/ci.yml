@@ -121,6 +121,9 @@ jobs:
     - name: Run depcheck for SCA
       run: |
         set -x
+        pwd
+        ls -la
+        npm bin -g
         export PATH=$(npm bin -g):$PATH
         echo $PATH
         mkdir -p reports
