@@ -92,7 +92,7 @@ jobs:
           echo "ID de análisis recuperado: $idanalisisParse"
         fi
 
-        qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' 'https://sonarcloud.io/api/qualitygates/project_status?analysisId=$idanalisisParse')
+        qualitygate=$(curl -s -u '${{ secrets.SONAR_TOKEN }}:' "https://sonarcloud.io/api/qualitygates/project_status?analysisId=${idanalisisParse}")
         echo "Respuesta de Quality Gate: $qualitygate"
         qualitygateStatus=$(echo "$qualitygate" | jq -r '.projectStatus.status')
 
