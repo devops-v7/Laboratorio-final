@@ -116,16 +116,15 @@ jobs:
       run: yarn install
 
     - name: Install depcheck
-      run: npm install depcheck
+      run: npm install -g depcheck
 
     - name: Run depcheck for SCA
       run: |
         mkdir -p reports
-        npx depcheck --json > reports/depcheck-report.json
+        depcheck --json > reports/depcheck-report.json
 
     - name: Upload Test result
       uses: actions/upload-artifact@master
       with:
         name: Depcheck report
         path: reports/depcheck-report.json
-
