@@ -115,16 +115,24 @@ jobs:
     - name: Install dependencies
       run: yarn install
 
-    - name: Dependency Check
-      uses: dependency-check/Dependency-Check_Action@1.1.0
-      with:
-        project: 'Laboratorio-final-new'
-        format: 'JSON'
-        path: '.'
-        others: '--noupdate'
+    - name: Install depcheck
+      run: npm install depcheck
+
+    - name: Run depcheck for SCA
+      run: |
+        mkdir -p reports
+        depcheck --json > reports/depcheck-report.json
 
     - name: Upload Test result
       uses: actions/upload-artifact@master
       with:
-        name: Dependency Check report
-        path: dependency-check-report.json
+        name: Depcheck report
+        path: reports/depcheck-report.json
+
+    - name: Dependency Check
+      uses: dependency-check/Dependency-Check_Action@1.1.0
+      with:
+        project: Laboratorio-final-new
+        scan: .
+        format: JSON
+        output: reports
