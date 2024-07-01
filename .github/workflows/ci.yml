@@ -127,7 +127,7 @@ jobs:
       - name: Check for high severity vulnerabilities
         run: |
           cat audit-report.json | jq '. | select(.severity == "high")' > high-severity-vulnerabilities.json
-          if [ -s high-severity-vulnerabilities.json ]; then
+          if [ -s high-severity-vulnerabilities.json]; then
             echo "High severity vulnerabilities found!"
             exit 1
           fi
@@ -191,13 +191,13 @@ jobs:
     needs: DockerScan
     runs-on: self-hosted
     steps:
-#      - name: Despliegue Aplicacion
-#        run: |
-#          docker run -d -p 8085:80 roderico/laboratorio-devsecops-final:latest
+      - name: Despliegue Aplicacion
+        run: |
+          docker run -d -p 8085:80 roderico/laboratorio-devsecops-final:latest
         
-#      - name: Sleep
-#        run: |
-#          sleep 3
+      - name: Sleep
+        run: |
+          sleep 3
 
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.11.0
@@ -209,6 +209,17 @@ jobs:
           fail_action: false
           allow_issue_writing: true
           artifact_name: zap_scan
+
+      - name: Check for high or medium alerts
+        run: |
+          HIGH_COUNT=$(grep -o '"risk": "High"' report_json.json | wc -l)
+          MEDIUM_COUNT=$(grep -o '"risk": "Medium"' report_json.json | wc -l)
+          if [ $HIGH_COUNT -ne 0 ] || [ $MEDIUM_COUNT -ne 0 ]; then
+            echo "High or medium risk alerts found!"
+            exit 1
+          else
+            echo "No high or medium risk alerts found."
+          fi
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
