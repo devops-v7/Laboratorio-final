@@ -212,8 +212,8 @@ jobs:
 
       - name: Check for high or medium alerts
         run: |
-          $HIGH_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "High"' | Measure-Object).Count
-          $MEDIUM_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "Medium (High)"' | Measure-Object).Count
+          $HIGH_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "High \(.*\)"' | Measure-Object).Count
+          $MEDIUM_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "Medium \(.*\)"' | Measure-Object).Count
           if ($HIGH_COUNT -ne 0 -or $MEDIUM_COUNT -ne 0) {
             Write-Output "High or medium risk alerts found!"
             exit 1
