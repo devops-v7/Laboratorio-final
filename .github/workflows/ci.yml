@@ -188,11 +188,17 @@ jobs:
     steps:
       - name: Despliegue Aplicacion
         run: |
-          docker run -d -p 8080:8080 roderico/laboratorio-devsecops-final:latest
+          docker run --network=host -d -p 8080:8080 roderico/laboratorio-devsecops-final:latest
           
       - name: Sleep
         run: |
-          sleep 3
+          sleep 15
+
+      - name: Print Docker Logs
+        run: docker logs $(docker ps -q -f "ancestor=roderico/laboratorio-devsecops-final:latest")
+
+      - name: Print Network Config
+        run: docker network inspect bridge
 
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.11.0
