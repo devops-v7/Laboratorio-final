@@ -121,7 +121,10 @@ jobs:
 
       - name: Run yarn audit
         run: |
-          yarn audit --json > audit-report.json
+          set -e
+          yarn audit --json > audit-report.json || true
+          cat audit-report.json | jq .
+          set +e
         continue-on-error: true
 
       - name: Check for high severity vulnerabilities
