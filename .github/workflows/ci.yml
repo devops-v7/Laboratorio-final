@@ -188,7 +188,7 @@ jobs:
     steps:
       - name: Despliegue Aplicacion
         run: |
-          docker run --network=host -d -p 8080:8080 roderico/laboratorio-devsecops-final:latest
+          docker run --network=host -d -p 8080:80 roderico/laboratorio-devsecops-final:latest
           
       - name: Sleep
         run: |
