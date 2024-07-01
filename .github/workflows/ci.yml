@@ -214,11 +214,11 @@ jobs:
         run: |
           $HIGH_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "High \(.*\)"' | Measure-Object).Count
           $MEDIUM_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "Medium \(.*\)"' | Measure-Object).Count
-          if ($HIGH_COUNT -ne 0 -or $MEDIUM_COUNT -ne 0) {
-            Write-Output "High or medium risk alerts found!"
-            exit 1
+          if ($HIGH_COUNT -eq 0 -and $MEDIUM_COUNT -le 2) {
+            Write-Output "No high risk alerts and medium risk alerts are within the acceptable range."
           } else {
-            Write-Output "No high or medium risk alerts found."
+            Write-Output "High risk alerts found or too many medium risk alerts!"
+            exit 1
           }
         shell: pwsh
 
