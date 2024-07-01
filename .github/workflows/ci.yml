@@ -127,7 +127,7 @@ jobs:
       - name: Check for high severity vulnerabilities
         run: |
           cat audit-report.json | jq '. | select(.severity == "high")' > high-severity-vulnerabilities.json
-          if [ -s high-severity-vulnerabilities.json]; then
+          if [ -s high-severity-vulnerabilities.json ]; then
             echo "High severity vulnerabilities found!"
             exit 1
           fi
@@ -211,18 +211,18 @@ jobs:
           artifact_name: zap_scan
 
       - name: Check for high or medium alerts
-      run: |
-        $HIGH_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "High \(.*\)"' | Measure-Object).Count
-        $MEDIUM_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "Medium \(.*\)"' | Measure-Object).Count
-        Write-Output "High risk alerts count: $HIGH_COUNT"
-        Write-Output "Medium risk alerts count: $MEDIUM_COUNT"
-        if ($HIGH_COUNT -eq 0 -and $MEDIUM_COUNT -le 2) {
-          Write-Output "No high risk alerts and medium risk alerts are within the acceptable range."
-        } else {
-          Write-Output "High risk alerts found or too many medium risk alerts!"
-          exit 1
-        }
-      shell: pwsh
+        run: |
+          $HIGH_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "High \(.*\)"' | Measure-Object).Count
+          $MEDIUM_COUNT = (Get-Content report_json.json | Select-String -Pattern '"riskdesc": "Medium \(.*\)"' | Measure-Object).Count
+          Write-Output "High risk alerts count: $HIGH_COUNT"
+          Write-Output "Medium risk alerts count: $MEDIUM_COUNT"
+          if ($HIGH_COUNT -eq 0 -and $MEDIUM_COUNT -le 2) {
+            Write-Output "No high risk alerts and medium risk alerts are within the acceptable range."
+          } else {
+            Write-Output "High risk alerts found or too many medium risk alerts!"
+            exit 1
+          }
+        shell: pwsh
 
       - name: Upload HTML report
         uses: actions/upload-artifact@v4
