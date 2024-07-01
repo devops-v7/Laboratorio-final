@@ -186,10 +186,6 @@ jobs:
     needs: DockerScan
     runs-on: self-hosted
     steps:
-      - name: Install prerequisites
-        run: |
-          Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-          Install-Module -Name touch -Force -Scope CurrentUser
 
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.11.0
